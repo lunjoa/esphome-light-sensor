@@ -1,0 +1,58 @@
+esphome:
+  name: light-sensor
+  friendly_name: light-sensor
+
+esp32:
+  board: az-delivery-devkit-v4
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  password: !secret password
+
+ota:
+  password: !secret password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Light-Sensor Fallback Hotspot"
+    password: !secret wifi_password
+
+captive_portal:
+
+i2c:
+  sda: 21
+  scl: 22
+  scan: True
+  id: bus_a
+
+sensor:
+  - platform: bh1750
+    name: "BH1750 Illuminance"
+    id: illuminance
+    address: 0x23
+    update_interval: 1s
+    filters: 
+      - median:
+          window_size: 5
+          send_every: 3
+    on_value:
+      - sensor.template.publish:
+          id: target
+          state: !lambda return (int)((fmax(fmin(id(illuminance).state * 1.5, 190), 29) - 29) / (190-29) * 100 + 10);
+
+  - platform: template
+    name: "Target Nits"
+    id: target
+    update_interval: never
+    device_class: illuminance
+    unit_of_measurement: "%"
+
