@@ -47,7 +47,7 @@ sensor:
     on_value:
       - sensor.template.publish:
           id: target
-          state: !lambda return (int)((fmax(fmin(id(illuminance).state * 1.5, 190), 29) - 29) / (190-29) * 100 + 10);
+          state: !lambda return (int)((fmax(fmin(id(illuminance).state * 1.5, 190), 29) - 29) / (190-29) * 100 + 5);
 
   - platform: template
     name: "Target Nits"
